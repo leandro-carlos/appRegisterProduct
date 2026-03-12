@@ -2,7 +2,7 @@ import * as SecureStore from "expo-secure-store";
 
 import type { AuthSession } from "@/types/auth";
 
-const SESSION_KEY = "app-register-product/session";
+const SESSION_KEY = "app_register_product.session";
 
 export const storageController = {
   async saveSession(session: AuthSession) {
@@ -28,4 +28,3 @@ export const storageController = {
     await SecureStore.deleteItemAsync(SESSION_KEY);
   },
 };
-

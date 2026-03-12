@@ -13,15 +13,7 @@ import type { RootStackParamList } from "@/types/navigation";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AuthStack() {
-  const { isAuthenticated, isHydrating } = useAuth();
-
-  if (isHydrating) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primaryActive} />
-      </View>
-    );
-  }
+  const { isAuthenticated } = useAuth();
 
   return (
     <Stack.Navigator
@@ -39,6 +31,7 @@ function AuthStack() {
         <>
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Register" component={Register} />
+          <Stack.Screen name="MainTabs" component={MainTabs} />
         </>
       )}
     </Stack.Navigator>

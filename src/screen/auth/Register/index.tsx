@@ -1,9 +1,14 @@
+import { useState } from "react";
+import { TouchableOpacity } from "react-native";
 import { Button, Input, Screen, Spacer, Text } from "@/library";
 import useRegisterController from "@/controllers/useRegister";
 import { theme } from "@/theme";
+import { Controller } from "react-hook-form";
+import { EyeClosedIcon, EyeIcon } from "phosphor-react-native";
 
 export default function Register() {
   const controller = useRegisterController();
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <Screen showHeader headerTitle="Cadastro" keyboardAvoiding>
@@ -15,39 +20,83 @@ export default function Register() {
         Cadastre-se para anunciar e gerenciar produtos.
       </Text>
       <Spacer size={20} />
-      <Input
-        label="Nome de usuario"
-        value={controller.form.username}
-        onChangeText={(value) => controller.setField("username", value)}
-        placeholder="Seu nome de usuario"
-        autoCapitalize="words"
+      <Controller
+        control={controller.control}
+        name="username"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Nome de usuario"
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            placeholder="Seu nome de usuario"
+            autoCapitalize="words"
+            errorMessage={controller.errors.username?.message}
+          />
+        )}
       />
       <Spacer />
-      <Input
-        label="Email"
-        value={controller.form.email}
-        onChangeText={(value) => controller.setField("email", value)}
-        placeholder="voce@email.com"
-        keyboardType="email-address"
-        autoCapitalize="none"
+      <Controller
+        control={controller.control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Email"
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            placeholder="voce@email.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            errorMessage={controller.errors.email?.message}
+          />
+        )}
       />
       <Spacer />
-      <Input
-        label="Senha"
-        value={controller.form.password}
-        onChangeText={(value) => controller.setField("password", value)}
-        placeholder="Crie uma senha"
-        secureTextEntry
+      <Controller
+        control={controller.control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Senha"
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            placeholder="Crie uma senha"
+            secureTextEntry={!showPassword}
+            rightIcon={
+              <TouchableOpacity
+                onPress={() => setShowPassword((current) => !current)}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  showPassword ? "Ocultar senha" : "Mostrar senha"
+                }
+                hitSlop={8}
+              >
+                {showPassword ? (
+                  <EyeClosedIcon
+                    color={theme.colors.textSecondary}
+                    size={20}
+                  />
+                ) : (
+                  <EyeIcon color={theme.colors.textSecondary} size={20} />
+                )}
+              </TouchableOpacity>
+            }
+            errorMessage={controller.errors.password?.message}
+          />
+        )}
       />
-      {controller.errorMessage ? (
+      {controller.errors.root?.message ? (
         <>
           <Spacer />
-          <Text color={theme.colors.error}>{controller.errorMessage}</Text>
+          <Text color={theme.colors.error}>{controller.errors.root.message}</Text>
         </>
       ) : null}
       <Spacer size={20} />
       <Button
         title="Cadastrar"
+        disabled={!controller.isValid}
         loading={controller.loading}
         onPress={controller.submit}
       />

@@ -14,18 +14,16 @@ import {
 } from "@/query/apiClient";
 import { storageController } from "./storageController";
 
-const registerSchema = z.object({
+export const registerSchema = z.object({
   username: z
     .string()
     .trim()
     .min(3, "Informe um nome de usuario com pelo menos 3 caracteres."),
   email: z.email("Informe um email valido."),
-  password: z
-    .string()
-    .min(6, "A senha deve ter pelo menos 6 caracteres."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
 });
 
-const loginSchema = z.object({
+export const loginSchema = z.object({
   email: z.email("Informe um email valido."),
   password: z.string().min(1, "Informe sua senha."),
 });
@@ -33,7 +31,7 @@ const loginSchema = z.object({
 const normalizeUser = (payload: any): User => ({
   id: String(payload?.id ?? payload?._id ?? payload?.userId ?? ""),
   username: String(
-    payload?.username ?? payload?.name ?? payload?.userName ?? "Usuario"
+    payload?.username ?? payload?.name ?? payload?.userName ?? "Usuario",
   ),
   email: String(payload?.email ?? ""),
 });
@@ -44,22 +42,14 @@ const resolveAuthSession = (payload: any): AuthSession => {
 
   return {
     accessToken: String(
-      data?.accessToken ?? data?.token ?? data?.access_token ?? ""
+      data?.accessToken ?? data?.token ?? data?.access_token ?? "",
     ),
     refreshToken: String(
-      data?.refreshToken ?? data?.refresh_token ?? payload?.refreshToken ?? ""
+      data?.refreshToken ?? data?.refresh_token ?? payload?.refreshToken ?? "",
     ),
     user: normalizeUser(userPayload),
   };
 };
-
-const isValidSession = (session: AuthSession | null): session is AuthSession =>
-  Boolean(
-    session?.accessToken &&
-      session?.refreshToken &&
-      session?.user?.id &&
-      session?.user?.email
-  );
 
 const mapAuthError = (error: unknown) => {
   if (error instanceof z.ZodError) {
@@ -107,18 +97,6 @@ export const authController = {
     return inMemorySession;
   },
 
-  async hydrateSession() {
-    const storedSession = await storageController.getSession();
-    const session = isValidSession(storedSession) ? storedSession : null;
-
-    if (!session && storedSession) {
-      await storageController.clearSession();
-    }
-
-    notifySession(session);
-    return session;
-  },
-
   async persistSession(session: AuthSession) {
     notifySession(session);
     await storageController.saveSession(session);
@@ -132,10 +110,6 @@ export const authController = {
     });
     const session = resolveAuthSession(response.data);
 
-    if (!isValidSession(session)) {
-      throw new Error("Resposta de autenticacao invalida.");
-    }
-
     await this.persistSession(session);
     return session;
   },
@@ -145,14 +119,8 @@ export const authController = {
     const response = await apiClient.post("/api/auth/register", body, {
       skipAuthRefresh: true,
     });
-    const session = resolveAuthSession(response.data);
 
-    if (isValidSession(session)) {
-      await this.persistSession(session);
-      return session;
-    }
-
-    return this.signIn({ email: body.email, password: body.password });
+    return response;
   },
 
   async refreshSession(refreshToken?: string) {
@@ -165,7 +133,7 @@ export const authController = {
     const response = await apiClient.post(
       "/api/auth/refresh",
       { refreshToken: currentRefreshToken },
-      { skipAuthRefresh: true }
+      { skipAuthRefresh: true },
     );
 
     const refreshedSession = resolveAuthSession({
@@ -181,10 +149,6 @@ export const authController = {
       refreshedSession.user = inMemorySession.user;
     }
 
-    if (!isValidSession(refreshedSession)) {
-      throw new Error("Nao foi possivel renovar a sessao.");
-    }
-
     await this.persistSession(refreshedSession);
     return refreshedSession;
   },
@@ -197,7 +161,7 @@ export const authController = {
         await apiClient.post(
           "/api/auth/logout",
           { refreshToken },
-          { skipAuthRefresh: true }
+          { skipAuthRefresh: true },
         );
       } catch {
         // Local cleanup still needs to happen.

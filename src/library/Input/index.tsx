@@ -13,6 +13,7 @@ import { theme } from "@/theme";
 type Props = TextInputProps & {
   label?: string;
   disabled?: boolean;
+  errorMessage?: string;
   containerStyle?: StyleProp<ViewStyle>;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -21,6 +22,7 @@ type Props = TextInputProps & {
 export default function Input({
   label,
   disabled = false,
+  errorMessage,
   containerStyle,
   style,
   leftIcon,
@@ -42,6 +44,7 @@ export default function Input({
           styles.inputWrapper,
           multiline && styles.multilineWrapper,
           disabled && styles.disabled,
+          errorMessage && styles.inputError,
         ]}
       >
         {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
@@ -55,6 +58,12 @@ export default function Input({
 
         {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
       </View>
+
+      {errorMessage ? (
+        <Text variant="caption" style={styles.errorText}>
+          {errorMessage}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -102,5 +111,14 @@ const styles = StyleSheet.create({
 
   disabled: {
     backgroundColor: theme.colors.background,
+  },
+
+  inputError: {
+    borderColor: theme.colors.error,
+  },
+
+  errorText: {
+    marginTop: 6,
+    color: theme.colors.error,
   },
 });

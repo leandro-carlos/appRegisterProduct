@@ -1,51 +1,49 @@
 import { useMutation } from "@tanstack/react-query";
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useAuth } from "./AuthProvider";
 import type { RootStackParamList } from "@/types/navigation";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { authController } from "./AuthController";
-
-type LoginFormState = {
-  email: string;
-  password: string;
-};
+import { authController, loginSchema } from "./AuthController";
+import type { LoginPayload } from "@/types/auth";
 
 export default function useLoginController() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { signIn } = useAuth();
-  const [form, setForm] = useState<LoginFormState>({
-    email: "",
-    password: "",
+  const form = useForm<LoginPayload>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
-  const [errorMessage, setErrorMessage] = useState("");
 
   const mutation = useMutation({
     mutationFn: signIn,
     onSuccess: () => {
-      setErrorMessage("");
+      form.clearErrors("root");
       navigation.reset({
         index: 0,
         routes: [{ name: "MainTabs", params: { screen: "Home" } }],
       });
     },
     onError: (error) => {
-      setErrorMessage(authController.getErrorMessage(error));
+      form.setError("root", {
+        message: authController.getErrorMessage(error),
+      });
     },
   });
 
   return {
-    form,
-    errorMessage,
+    control: form.control,
+    errors: form.formState.errors,
+    isValid: form.formState.isValid,
     loading: mutation.isPending,
-    setField: (field: keyof LoginFormState, value: string) => {
-      setErrorMessage("");
-      setForm((current) => ({ ...current, [field]: value }));
-    },
-    submit: () => mutation.mutate(form),
+    submit: form.handleSubmit((values) => mutation.mutate(values)),
     goToRegister: () => navigation.navigate("Register"),
   };
 }
-

@@ -55,7 +55,7 @@ export default function Home() {
   const controller = useProductsController();
 
   return (
-    <Screen showHeader headerTitle="Produtos" scrollEnabled={false}>
+    <Screen scrollEnabled={false}>
       <FlatList
         style={styles.list}
         data={controller.products}
@@ -78,19 +78,6 @@ export default function Home() {
             </Text>
             <Spacer size={20} />
 
-            {!controller.isAuthenticated ? (
-              <>
-                <Button title="Entrar" onPress={controller.openLogin} />
-                <Spacer />
-                <Button
-                  title="Criar conta"
-                  variant="outlined"
-                  onPress={controller.openRegister}
-                />
-                <Spacer size={20} />
-              </>
-            ) : null}
-
             <View style={styles.filtersCard}>
               <Input
                 label="Nome"
@@ -102,7 +89,9 @@ export default function Home() {
               <Input
                 label="Descricao"
                 value={controller.filters.description}
-                onChangeText={(value) => controller.setFilter("description", value)}
+                onChangeText={(value) =>
+                  controller.setFilter("description", value)
+                }
                 placeholder="Buscar por descricao"
               />
               <Spacer />
@@ -110,7 +99,9 @@ export default function Home() {
                 <Input
                   label="Preco minimo"
                   value={controller.filters.minPrice}
-                  onChangeText={(value) => controller.setFilter("minPrice", value)}
+                  onChangeText={(value) =>
+                    controller.setFilter("minPrice", value)
+                  }
                   placeholder="0"
                   keyboardType="decimal-pad"
                   containerStyle={styles.priceInput}
@@ -118,29 +109,21 @@ export default function Home() {
                 <Input
                   label="Preco maximo"
                   value={controller.filters.maxPrice}
-                  onChangeText={(value) => controller.setFilter("maxPrice", value)}
+                  onChangeText={(value) =>
+                    controller.setFilter("maxPrice", value)
+                  }
                   placeholder="1000"
                   keyboardType="decimal-pad"
                   containerStyle={styles.priceInput}
                 />
               </View>
               <Spacer />
-              <Button title="Limpar filtros" variant="outlined" onPress={controller.clearFilters} />
+              <Button
+                title="Limpar filtros"
+                variant="outlined"
+                onPress={controller.clearFilters}
+              />
             </View>
-
-            {controller.isAuthenticated ? (
-              <>
-                <Spacer />
-                <Button title="Novo produto" onPress={controller.openCreate} />
-              </>
-            ) : null}
-
-            {controller.errorMessage ? (
-              <>
-                <Spacer />
-                <Text color={theme.colors.error}>{controller.errorMessage}</Text>
-              </>
-            ) : null}
 
             <Spacer size={20} />
           </View>
