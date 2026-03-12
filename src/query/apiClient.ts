@@ -15,30 +15,27 @@ declare module "axios" {
 }
 
 let unauthorizedHandler: (() => Promise<void> | void) | null = null;
-let refreshPromise: Promise<string> | null = null;
 let accessTokenProvider: (() => string | null) | null = null;
-let refreshHandler: (() => Promise<string>) | null = null;
-
-const requestAccessTokenRefresh = async () => {
-  if (!refreshHandler) {
-    throw new Error("Refresh handler nao configurado.");
-  }
-
-  if (!refreshPromise) {
-    refreshPromise = refreshHandler().finally(() => {
-      refreshPromise = null;
-    });
-  }
-
-  return refreshPromise;
-};
 
 export const apiClient = axios.create({
   baseURL: env.apiUrl,
   headers: {
     "Content-Type": "application/json",
+    Authorization: `Bearer ${accessTokenProvider?.() ?? "dsadsads"}`,
   },
 });
+
+export const setUnauthorizedHandler = (
+  handler: (() => Promise<void> | void) | null,
+) => {
+  unauthorizedHandler = handler;
+};
+
+export const setAccessTokenProvider = (
+  provider: (() => string | null) | null,
+) => {
+  accessTokenProvider = provider;
+};
 
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
@@ -46,16 +43,20 @@ apiClient.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else if (config.headers?.Authorization) {
+      delete config.headers.Authorization;
     }
 
     return config;
-  }
+  },
 );
 
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig | undefined;
+    const originalRequest = error.config as
+      | InternalAxiosRequestConfig
+      | undefined;
 
     if (
       !originalRequest ||
@@ -68,26 +69,11 @@ apiClient.interceptors.response.use(
 
     try {
       originalRequest._retry = true;
-      const accessToken = await requestAccessTokenRefresh();
-      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+      // originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       return apiClient(originalRequest);
     } catch (refreshError) {
       await unauthorizedHandler?.();
       throw refreshError;
     }
-  }
+  },
 );
-
-export const setUnauthorizedHandler = (
-  handler: (() => Promise<void> | void) | null
-) => {
-  unauthorizedHandler = handler;
-};
-
-export const setAuthSessionHandlers = (handlers: {
-  getAccessToken: () => string | null;
-  refreshAccessToken: () => Promise<string>;
-}) => {
-  accessTokenProvider = handlers.getAccessToken;
-  refreshHandler = handlers.refreshAccessToken;
-};

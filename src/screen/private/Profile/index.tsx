@@ -21,12 +21,16 @@ export default function Profile() {
   const handleLogout = () => {
     Alert.alert("Sair", "Deseja encerrar sua sessao?", [
       { text: "Cancelar", style: "cancel" },
-      { text: "Sair", style: "destructive", onPress: () => logoutMutation.mutate() },
+      {
+        text: "Sair",
+        style: "destructive",
+        onPress: () => logoutMutation.mutate(),
+      },
     ]);
   };
 
   return (
-    <Screen showHeader headerTitle="Minha conta">
+    <Screen>
       <View style={styles.card}>
         <Text variant="caption" color={theme.colors.textSecondary}>
           Usuario autenticado
@@ -74,4 +78,3 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
 });
-

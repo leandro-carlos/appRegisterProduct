@@ -1,58 +1,22 @@
 import React from "react";
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 
 import { Button, Input, Screen, Spacer, Text } from "@/library";
 import { useProductsController } from "@/controllers/useProduct";
 import { theme } from "@/theme";
-import type { Product } from "@/types/product";
-
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-
-function ProductCard({
-  product,
-  canManage,
-  onPress,
-}: {
-  product: Product;
-  canManage: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable onPress={onPress} style={styles.card}>
-      <Text variant="subtitle" weight="bold">
-        {product.name}
-      </Text>
-      <Spacer size={8} />
-      <Text numberOfLines={3} color={theme.colors.textSecondary}>
-        {product.description}
-      </Text>
-      <Spacer size={12} />
-      <View style={styles.cardFooter}>
-        <Text weight="bold" color={theme.colors.primaryActive}>
-          {formatPrice(product.price)}
-        </Text>
-        {canManage ? (
-          <Text variant="small" color={theme.colors.info}>
-            Seu produto
-          </Text>
-        ) : null}
-      </View>
-    </Pressable>
-  );
-}
+import Fab from "@/library/Fab";
+import { PlusIcon } from "phosphor-react-native";
+import { useNavigation } from "@react-navigation/native";
+import { ProductCard } from "@/components/ProductCard";
 
 export default function Home() {
   const controller = useProductsController();
+  const navigation = useNavigation();
+
+  const handleCreateProduct = () => {
+    // @ts-ignore
+    navigation.navigate("ProductForm", { mode: "create" });
+  };
 
   return (
     <Screen scrollEnabled={false}>
@@ -141,12 +105,13 @@ export default function Home() {
         renderItem={({ item }) => (
           <ProductCard
             product={item}
-            canManage={controller.canManage(item)}
             onPress={() => controller.openDetails(item)}
           />
         )}
         contentContainerStyle={styles.listContent}
       />
+
+      <Fab icon={<PlusIcon />} onPress={() => handleCreateProduct()} />
     </Screen>
   );
 }
@@ -174,17 +139,5 @@ const styles = StyleSheet.create({
   },
   priceInput: {
     flex: 1,
-  },
-  card: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
   },
 });

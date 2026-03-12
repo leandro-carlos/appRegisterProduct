@@ -21,7 +21,7 @@ type AuthContextValue = {
   user: User | null;
   isAuthenticated: boolean;
   signIn: (payload: LoginPayload) => Promise<AuthSession>;
-  register: (payload: RegisterPayload) => Promise<AuthSession>;
+  register: (payload: RegisterPayload) => Promise<unknown>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<User>;
 };

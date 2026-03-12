@@ -7,11 +7,7 @@ import type {
   RegisterPayload,
   User,
 } from "@/types/auth";
-import {
-  apiClient,
-  setAuthSessionHandlers,
-  setUnauthorizedHandler,
-} from "@/query/apiClient";
+import { apiClient, setAccessTokenProvider } from "@/query/apiClient";
 import { storageController } from "./storageController";
 
 export const registerSchema = z.object({
@@ -39,13 +35,22 @@ const normalizeUser = (payload: any): User => ({
 const resolveAuthSession = (payload: any): AuthSession => {
   const data = payload?.data ?? payload;
   const userPayload = data?.user ?? data?.profile ?? payload?.user;
+  const tokenPayload = data?.tokens ?? payload?.tokens;
 
   return {
     accessToken: String(
-      data?.accessToken ?? data?.token ?? data?.access_token ?? "",
+      tokenPayload?.accessToken ??
+        data?.accessToken ??
+        data?.token ??
+        data?.access_token ??
+        "",
     ),
     refreshToken: String(
-      data?.refreshToken ?? data?.refresh_token ?? payload?.refreshToken ?? "",
+      tokenPayload?.refreshToken ??
+        data?.refreshToken ??
+        data?.refresh_token ??
+        payload?.refreshToken ??
+        "",
     ),
     user: normalizeUser(userPayload),
   };
@@ -87,6 +92,8 @@ const notifySession = (session: AuthSession | null) => {
   inMemorySession = session;
   sessionListener?.(session);
 };
+
+setAccessTokenProvider(() => inMemorySession?.accessToken ?? null);
 
 export const authController = {
   setSessionListener(listener: SessionListener) {
@@ -176,13 +183,3 @@ export const authController = {
     return mapAuthError(error);
   },
 };
-
-setAuthSessionHandlers({
-  getAccessToken: () => inMemorySession?.accessToken ?? null,
-  refreshAccessToken: async () => {
-    const session = await authController.refreshSession();
-    return session.accessToken;
-  },
-});
-
-setUnauthorizedHandler(() => authController.signOut({ remote: false }));
