@@ -27,6 +27,8 @@ export default function Input({
   rightIcon,
   ...rest
 }: Props) {
+  const multiline = Boolean(rest.multiline);
+
   return (
     <View style={[styles.container, containerStyle]}>
       {label && (
@@ -35,7 +37,13 @@ export default function Input({
         </Text>
       )}
 
-      <View style={[styles.inputWrapper, disabled && styles.disabled]}>
+      <View
+        style={[
+          styles.inputWrapper,
+          multiline && styles.multilineWrapper,
+          disabled && styles.disabled,
+        ]}
+      >
         {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
 
         <TextInput
@@ -70,6 +78,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.surface,
+  },
+  multilineWrapper: {
+    minHeight: 96,
+    height: "auto",
+    alignItems: "flex-start",
+    paddingVertical: 12,
   },
 
   input: {

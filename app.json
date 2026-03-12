@@ -2,6 +2,9 @@
   "expo": {
     "name": "appRegisterProduct",
     "slug": "appRegisterProduct",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
