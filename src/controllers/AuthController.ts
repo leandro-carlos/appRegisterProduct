@@ -16,12 +16,12 @@ export const registerSchema = z.object({
     .trim()
     .min(3, "Informe um nome de usuario com pelo menos 3 caracteres."),
   email: z.email("Informe um email valido."),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+  password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."),
 });
 
 export const loginSchema = z.object({
   email: z.email("Informe um email valido."),
-  password: z.string().min(1, "Informe sua senha."),
+  password: z.string().min(8, "Informe sua senha."),
 });
 
 const normalizeUser = (payload: any): User => ({
@@ -163,17 +163,11 @@ export const authController = {
   async signOut(options?: { remote?: boolean }) {
     const refreshToken = inMemorySession?.refreshToken;
 
-    if (options?.remote !== false && refreshToken) {
-      try {
-        await apiClient.post(
-          "/api/auth/logout",
-          { refreshToken },
-          { skipAuthRefresh: true },
-        );
-      } catch {
-        // Local cleanup still needs to happen.
-      }
-    }
+    await apiClient.post(
+      "/api/auth/logout",
+      { refreshToken },
+      { skipAuthRefresh: true },
+    );
 
     notifySession(null);
     await storageController.clearSession();

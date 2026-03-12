@@ -6,9 +6,11 @@ import { Button, Screen, Spacer, Text } from "@/library";
 import { useAuth } from "@/controllers/AuthProvider";
 import { theme } from "@/theme";
 import { userController } from "@/controllers/UserController";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Profile() {
   const { user, signOut, refreshUser } = useAuth();
+  const navigation = useNavigation();
 
   const refreshMutation = useMutation({
     mutationFn: refreshUser,
@@ -16,6 +18,13 @@ export default function Profile() {
 
   const logoutMutation = useMutation({
     mutationFn: signOut,
+    onSuccess: () => {
+      navigation.reset({
+        index: 0,
+        // @ts-ignore
+        routes: [{ name: "Login" }],
+      });
+    },
   });
 
   const handleLogout = () => {

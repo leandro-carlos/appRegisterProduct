@@ -29,7 +29,7 @@ export default function useRegisterController() {
       form.clearErrors("root");
       navigation.reset({
         index: 0,
-        routes: [{ name: "MainTabs", params: { screen: "Home" } }],
+        routes: [{ name: "Login" }],
       });
     },
     onError: (error) => {
